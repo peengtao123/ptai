@@ -195,7 +195,17 @@
                             
                             const chunk = decoder.decode(value, { stream: true });
                             console.log('Received chunk:', chunk);
-                            accumulatedResponse += chunk;
+                            
+                            // 解析SSE格式数据
+                            const lines = chunk.split('\n');
+                            for (const line of lines) {
+                                if (line.startsWith('data:')) {
+                                    const content = line.substring(5).trim();
+                                    if (content) {
+                                        accumulatedResponse += content;
+                                    }
+                                }
+                            }
                             
                             // 更新机器人消息内容
                             botContentDiv.textContent = accumulatedResponse;
