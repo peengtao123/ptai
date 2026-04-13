@@ -7,6 +7,7 @@ ext {
     springAiVersion = "2.0.0-M4"
 }
 
+
 group = 'org.example'
 version = '0.0.1-SNAPSHOT'
 description = 'demo'
@@ -23,8 +24,8 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
@@ -33,8 +34,3 @@ dependencyManagement {
         mavenBom "org.springframework.ai:spring-ai-bom:$springAiVersion"
     }
 }
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
