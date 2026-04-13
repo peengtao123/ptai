@@ -5,6 +5,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 @Service
 public class ChatService {
@@ -16,6 +17,10 @@ public class ChatService {
     
     public String chat(String message) {
         return chatModel.call(message);
+    }
+    
+    public Flux<String> chatStream(String message) {
+        return chatModel.stream(message);
     }
     
     public String chatWithSystem(String userMessage, String systemPrompt) {

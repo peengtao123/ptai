@@ -155,36 +155,61 @@
                 addMessage(message, true);
                 messageInput.value = '';
                 
-                // 显示加载状态
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'message bot-message';
-                loadingDiv.id = 'loadingMessage';
-                const loadingContent = document.createElement('div');
-                loadingContent.className = 'message-content bot-content';
-                loadingContent.innerHTML = '<span class="loading"></span> 正在思考...';
-                loadingDiv.appendChild(loadingContent);
-                chatContainer.appendChild(loadingDiv);
+                // 创建机器人消息容器
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.className = 'message bot-message';
+                const botContentDiv = document.createElement('div');
+                botContentDiv.className = 'message-content bot-content';
+                botContentDiv.textContent = '';
+                botMessageDiv.appendChild(botContentDiv);
+                chatContainer.appendChild(botMessageDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
                 
-                // 发送请求到后端
-                fetch('/api/chat', {
+                // 发送请求到后端流式接口
+                console.log('Sending message:', message);
+                
+                // 使用流式API
+                fetch('/api/chat/stream', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ message: message })
                 })
-                .then(response => response.text())
-                .then(data => {
-                    // 移除加载状态
-                    document.getElementById('loadingMessage').remove();
-                    // 添加机器人回复
-                    addMessage(data, false);
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Response not ok');
+                    }
+                    
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let accumulatedResponse = '';
+                    
+                    function processStream() {
+                        return reader.read().then(({ done, value }) => {
+                            if (done) {
+                                console.log('Stream complete');
+                                return;
+                            }
+                            
+                            const chunk = decoder.decode(value, { stream: true });
+                            console.log('Received chunk:', chunk);
+                            accumulatedResponse += chunk;
+                            
+                            // 更新机器人消息内容
+                            botContentDiv.textContent = accumulatedResponse;
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                            
+                            return processStream();
+                        });
+                    }
+                    
+                    return processStream();
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    document.getElementById('loadingMessage').remove();
-                    addMessage('抱歉，出现了错误，请稍后再试。', false);
+                    botContentDiv.textContent = '抱歉，出现了错误，请稍后再试。';
                 });
             }
         }
