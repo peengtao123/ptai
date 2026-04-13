@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大模型聊天</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        
+        .user-message {
+            justify-content: flex-end;
+        }
+        
+        .bot-message {
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+        }
+        
+        .user-content {
+            background-color: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .bot-content {
+            background-color: #f1f1f1;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .input-field {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .send-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0 20px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        .send-button:hover {
+            background-color: #0069d9;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>大模型聊天</h1>
+        </div>
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot-message">
+                <div class="message-content bot-content">
+                    你好！我是大模型助手，有什么可以帮助你的吗？
+                </div>
+            </div>
+        </div>
+        <div class="input-container">
+            <input type="text" class="input-field" id="messageInput" placeholder="请输入消息...">
+            <button class="send-button" id="sendButton">发送</button>
+        </div>
+    </div>
+    
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        
+        function addMessage(message, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = isUser ? 'message-content user-content' : 'message-content bot-content';
+            contentDiv.textContent = message;
+            
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                messageInput.value = '';
+                
+                // 显示加载状态
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message bot-message';
+                loadingDiv.id = 'loadingMessage';
+                const loadingContent = document.createElement('div');
+                loadingContent.className = 'message-content bot-content';
+                loadingContent.innerHTML = '<span class="loading"></span> 正在思考...';
+                loadingDiv.appendChild(loadingContent);
+                chatContainer.appendChild(loadingDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // 发送请求到后端
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                })
+                .then(response => response.text())
+                .then(data => {
+                    // 移除加载状态
+                    document.getElementById('loadingMessage').remove();
+                    // 添加机器人回复
+                    addMessage(data, false);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loadingMessage').remove();
+                    addMessage('抱歉，出现了错误，请稍后再试。', false);
+                });
+            }
+        }
+        
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
