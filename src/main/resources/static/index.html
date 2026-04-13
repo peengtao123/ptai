@@ -17,12 +17,16 @@
         }
         
         .container {
-            max-width: 800px;
-            margin: 20px auto;
+            width: 400px;
+            height: 600px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             background-color: white;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
             overflow: hidden;
+            z-index: 1000;
         }
         
         .header {
@@ -33,7 +37,7 @@
         }
         
         .chat-container {
-            height: 500px;
+            height: calc(100% - 140px);
             overflow-y: auto;
             padding: 20px;
         }
@@ -41,6 +45,7 @@
         .message {
             margin-bottom: 15px;
             display: flex;
+            align-items: flex-start;
         }
         
         .user-message {
@@ -49,6 +54,22 @@
         
         .bot-message {
             justify-content: flex-start;
+        }
+        
+        .avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            flex-shrink: 0;
+        }
+        
+        .user-avatar {
+            margin-left: 10px;
+        }
+        
+        .bot-avatar {
+            margin-right: 10px;
         }
         
         .message-content {
@@ -120,6 +141,7 @@
         </div>
         <div class="chat-container" id="chatContainer">
             <div class="message bot-message">
+                <div class="avatar-placeholder bot-avatar"></div>
                 <div class="message-content bot-content">
                     你好！我是大模型助手，有什么可以帮助你的吗？
                 </div>
@@ -140,11 +162,22 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
             
+            // 创建头像占位符
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `avatar-placeholder ${isUser ? 'user-avatar' : 'bot-avatar'}`;
+            
             const contentDiv = document.createElement('div');
             contentDiv.className = isUser ? 'message-content user-content' : 'message-content bot-content';
             contentDiv.textContent = message;
             
-            messageDiv.appendChild(contentDiv);
+            if (isUser) {
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(avatarDiv);
+            } else {
+                messageDiv.appendChild(avatarDiv);
+                messageDiv.appendChild(contentDiv);
+            }
+            
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -158,9 +191,16 @@
                 // 创建机器人消息容器
                 const botMessageDiv = document.createElement('div');
                 botMessageDiv.className = 'message bot-message';
+                
+                // 创建头像占位符
+                const botAvatarDiv = document.createElement('div');
+                botAvatarDiv.className = 'avatar-placeholder bot-avatar';
+                
                 const botContentDiv = document.createElement('div');
                 botContentDiv.className = 'message-content bot-content';
                 botContentDiv.textContent = '';
+                
+                botMessageDiv.appendChild(botAvatarDiv);
                 botMessageDiv.appendChild(botContentDiv);
                 chatContainer.appendChild(botMessageDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
