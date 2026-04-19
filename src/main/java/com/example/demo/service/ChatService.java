@@ -23,7 +23,14 @@ public class ChatService {
         return chatModel.stream(message);
     }
     
+    /**
+     * 调用模型，包含系统提示和用户消息
+     * @param userMessage 用户消息
+     * @param systemPrompt 系统提示消息
+     * @param systemPrompt 系统提示消息
+     */
     public String chatWithSystem(String userMessage, String systemPrompt) {
+        System.out.println("userMessage: d" + userMessage);
         Prompt prompt = new Prompt(
             java.util.List.of(
                 new SystemMessage(systemPrompt),
